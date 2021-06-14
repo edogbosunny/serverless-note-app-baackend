@@ -10,7 +10,7 @@ async function createNote(event, context) {
 
   try {
     const payload = event.body;
-    if (!payload?.email) {
+    if (!event?.requestContext?.authorizer?.name) {
       return {
         statusCode: 400,
         body: JSON.stringify(new createError.NotFound()),
@@ -18,12 +18,13 @@ async function createNote(event, context) {
     }
     let isoDate = new Date().toISOString();
 
+    // !Todo Abstract the below into a service file...
     const auctionPayload = {
       id: uuid(),
       status: 'OPEN',
       createdAt: isoDate,
       title: payload?.title || '',
-      email: payload?.email,
+      email: event?.requestContext?.authorizer?.name,
       note: payload?.note || ''
     };
 
