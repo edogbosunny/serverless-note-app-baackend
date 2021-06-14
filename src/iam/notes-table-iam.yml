@@ -1,0 +1,17 @@
+NotesTableIAM:
+  Effect: "Allow"
+  Action:
+    - dynamodb:*
+      # Resource: "*"
+  # iamRoleStatements:
+  #   - Effect: "Allow"
+  #     Action:
+  #      - dynamodb:Query
+  #      - dynamodb:Scan
+  #      - dynamodb:GetItem
+  #      - dynamodb:PutItem
+  #      - dynamodb:UpdateItem
+  #      - dynamodb:DeleteItem
+  Resource: 
+    - ${self:custom.NotesTable.arn}
+  # Resource: "arn:aws:dynamodb:us-east-1:090473797445:table/AuctionsTable"
