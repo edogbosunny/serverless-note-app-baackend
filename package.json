@@ -1,0 +1,25 @@
+{
+  "name": "serverless-note-app-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/edogbosunny/serverless-note-app-baackend.git"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^8.1.0"
+  },
+  "devDependencies": {
+    "serverless-bundle": "^1.3.3"
+  },
+  "author": "Sunny",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/edogbosunny/serverless-note-app-baackend/issues"
+  },
+  "homepage": "https://github.com/edogbosunny/serverless-note-app-baackend#readme"
+}
