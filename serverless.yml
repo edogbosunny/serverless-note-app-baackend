@@ -1,60 +1,77 @@
-
-service:
-  name: serverless-auth0-authorizer
+service: serverless-note-app
 
 plugins:
   - serverless-bundle
+  - serverless-pseudo-parameters
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs14.x
   memorySize: 128
+  stage: ${opt:stage, 'dev'}
+  lambdaHashingVersion: "20201221"
+  iamRoleStatements:
+    - ${file(src/iam/notes-table-iam.yml):NotesTableIAM}
   environment:
     AUTH0_PUBLIC_KEY: ${file(secret.pem)}
+    NOTES_TABLE_NAME: ${self:custom.NotesTable.name}
 
 functions:
   auth:
-    handler: src/handlers/auth.handler
-    cors: true
+    handler: src/handlers/private/auth.handler
+    # cors: true
   publicEndpoint:
-    handler: src/handlers/public.handler
+    handler: src/handlers/public/home.handler
     events:
       - http:
           path: public
           method: POST
           cors: true
   privateEndpoint:
-    handler: src/handlers/private.handler
+    handler: src/handlers/private/private.handler
     events:
       - http:
           path: private
           method: POST
           authorizer: auth
           cors: true
+  createNote:
+    handler: src/handlers/private/notes/create-note.handler
+    events:
+      - http:
+          path: /note
+          method: POST
+          authorizer: auth
+          cors: true
 
 resources:
   Resources:
-    # This response is needed for custom authorizer failures cors support
-    GatewayResponse:
-      Type: 'AWS::ApiGateway::GatewayResponse'
-      Properties:
-        ResponseParameters:
-          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-        ResponseType: EXPIRED_TOKEN
-        RestApiId:
-          Ref: 'ApiGatewayRestApi'
-        StatusCode: '401'
-    AuthFailureGatewayResponse:
-      Type: 'AWS::ApiGateway::GatewayResponse'
-      Properties:
-        ResponseParameters:
-          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-        ResponseType: UNAUTHORIZED
-        RestApiId:
-          Ref: 'ApiGatewayRestApi'
-        StatusCode: '401'
+    # Reference to the database table...
+    NotesTable: ${file(src/resources/notes-table.yml):NotesTable}
+
+    # GatewayResponse:
+    #   Type: 'AWS::ApiGateway::GatewayResponse'
+    #   Properties:
+    #     ResponseParameters:
+    #       gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+    #       gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+    #     ResponseType: EXPIRED_TOKEN
+    #     RestApiId:
+    #       Ref: 'ApiGatewayRestApi'
+    #     StatusCode: '401'
+    # AuthFailureGatewayResponse:
+    #   Type: 'AWS::ApiGateway::GatewayResponse'
+    #   Properties:
+    #     ResponseParameters:
+    #       gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+    #       gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+    #     ResponseType: UNAUTHORIZED
+    #     RestApiId:
+    #       Ref: 'ApiGatewayRestApi'
+    #     StatusCode: '401'
 custom:
   bundle:
     linting: false
+  NotesTable:
+    name: !Ref NotesTable
+    arn: !GetAtt NotesTable.Arn
