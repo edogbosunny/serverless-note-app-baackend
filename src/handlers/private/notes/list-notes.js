@@ -6,32 +6,51 @@ import createError from 'http-errors';
 
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
-async function getAuction(event, context) {
-
-  let auctions;
+async function listNotes(event, context) {
 
   try {
-    auctions = await dynamoDB.scan({
-      TableName: process.env.AUCTIONS_TABLE_NAME,
-      // Item: auctionPayload,
-    }).promise();
-  } catch (error) {
-    console.error(error);
-    throw new createError.InternalServerError(error);
-  }
+    if (!event?.requestContext?.authorizer?.name) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify(new createError.NotFound()),
+      };
+    }
 
-  return {
-    statusCode: 200,
-    id: uuid,
-    body: JSON.stringify({
-      message: 'Hello world from Nigeria',
-      auctions: auctions?.Items || [],
-    }),
-  };
+    let auctions;
+
+    let response = auctions = await dynamoDB.query({
+      TableName: process.env.NOTES_TABLE_NAME,
+      // TableName: tableName,
+      IndexName: 'emailkey',
+      KeyConditionExpression: `email = :hkey`,
+      ExpressionAttributeValues: {
+        ':hkey': 'test@test.com',
+      }
+    }).promise();
+
+    if (!response) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify(new createError.NotFound()),
+      };
+    }
+
+    return {
+      statusCode: 200,
+      id: uuid,
+      body: JSON.stringify({
+        message: 'Hello world from Nigeria',
+        auctions: auctions?.Items || [],
+      }),
+    };
+  } catch (error) {
+    console.log(error)
+    // retur generic errors and check stack logs to debug futher
+    return {
+      statusCode: 500,
+      body: JSON.stringify(new createError.InternalServerError(), error),
+    };
+  }
 }
 
-export const handler = commonmiddleware(getAuction);
-// export const handler = middy(getAuction)
-//   .use(httpJsonBodyParser())
-//   .use(httpEventNormalizer())
-//   .use(httpErrorHandler());
+export const handler = commonmiddleware(listNotes);

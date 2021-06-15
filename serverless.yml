@@ -27,14 +27,7 @@ functions:
           path: public
           method: POST
           cors: true
-  privateEndpoint:
-    handler: src/handlers/private/private.handler
-    events:
-      - http:
-          path: private
-          method: POST
-          authorizer: auth
-          cors: true
+
   createNote:
     handler: src/handlers/private/notes/create-note.handler
     events:
@@ -43,6 +36,30 @@ functions:
           method: POST
           authorizer: auth
           cors: true
+  listNotes:
+    handler: src/handlers/private/notes/list-notes.handler
+    events:
+      - http:
+          path: /notes
+          method: GET
+          authorizer: auth
+          cors: true
+  listNote:
+    handler: src/handlers/private/notes/get-single-note.handler
+    events:
+    - http:
+        path: /note/{id}
+        method: GET
+        authorizer: auth
+        cors: true
+  updateNote:
+    handler: src/handlers/private/notes/update-single-note.handler
+    events:
+    - http:
+        path: /note/{id}
+        method: PUT
+        authorizer: auth
+        cors: true
 
 resources:
   Resources:

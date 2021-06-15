@@ -36,9 +36,7 @@ async function createNote(event, context) {
     return {
       statusCode: 201,
       headers: {
-        /* Required for CORS support to work */
         'Access-Control-Allow-Origin': '*',
-        /* Required for cookies, authorization headers with HTTPS */
         'Access-Control-Allow-Credentials': true,
       },
       id: uuid,
